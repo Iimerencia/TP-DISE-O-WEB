@@ -1,0 +1,56 @@
+h1 {
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    color: #336699; 
+    margin-bottom: 20px;
+}
+
+#popUp {
+    display: none;
+    background-color: #ffffff; 
+    color: #333333; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 400px;
+    margin: 0 auto;
+    border-radius: 8px;
+}
+
+#popUp button {
+    padding: 10px 20px;
+    background-color: #5bc0de; 
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+#popUp button:hover {
+    background-color: #31b0d5; 
+}
+
+footer {
+    text-align: right;
+    color: #5bc0de; 
+    font-size: 12px;
+    font-style: italic;
+    margin-top: 20px;
+}
+
+table {
+    border: 1px solid #e0e0e0; 
+    margin-top: 20px;
+}
+
+table th, table td {
+    border: 1px solid #e0e0e0; 
+}
+
+.table-dark {
+    background-color: #f9f9f9; 
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f1f1f1; 
+}

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP Entregable</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/flatly/bootstrap.min.css">
+    <link rel='stylesheet' href='https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.min.css'>
+    <link rel="stylesheet" href="style.css">
+    <script src='https://code.jquery.com/jquery-3.6.0.min.js'></script>
+    <script src='https://code.jquery.com/ui/1.12.1/jquery-ui.min.js'></script>
+</head>
+
+<body>
+    <h1>Trabajo práctico Diseño Web</h1>
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>NAME</th>
+                <th>COLOR</th>
+                <th>PRICE</th>
+                <th colspan='2'></th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td></td>
+                <td><input id='name' /></td>
+                <td><input id='color' /></td>
+                <td><input id='price' /></td>
+                <td colspan='2' style='text-align: center'><button onclick='saveObject()'>ADD</button></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div id='popUp' title="Edit Object">
+        <table>
+            <tr>
+                <td><label>ID: </label></td>
+                <td><input name='id2' disabled /></td>
+            </tr>
+            <tr>
+                <td><label>NAME: </label></td>
+                <td><input name='name2' /></td>
+            </tr>
+            <tr>
+                <td><label>COLOR: </label></td>
+                <td><input name='color2' /></td>
+            </tr>
+            <tr>
+                <td><label>PRICE: </label></td>
+                <td><input name='price2' /></td>
+            </tr>
+            <tr>
+                <td colspan='2' style='text-align: center'><button onclick='updateObject()'>MODIFY</button></td>
+            </tr>
+        </table>
+    </div>
+
+    <footer>
+        <p>v 1.0</p>
+    </footer>
+
+    <script>
+        const url = 'https://api.restful-api.dev/objects';
+
+        window.onload = function () {
+            $('#popUp').hide();
+            getObjects();
+        };
+
+        async function loadObjects() {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return await response.json();
+            } catch (error) {
+                handleError(error);
+            }
+        }
+
+        async function addObject() {
+            try {
+                const data = JSON.stringify({
+                    'color': document.getElementById('color').value,
+                    'price': document.getElementById('price').value
+                });
+                const object = JSON.stringify({
+                    'name': document.getElementById('name').value,
+                    'data': data
+                });
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: object
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to add object');
+                }
+                return await response.json();
+            } catch (error) {
+                handleError(error);
+            }
+        }
+
+        async function removeObject(id) {
+            try {
+                const response = await fetch(`${url}/${id}`, {
+                    method: 'DELETE'
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to delete object');
+                }
+            } catch (error) {
+                handleError(error);
+            }
+        }
+
+        async function modifyObject() {
+            try {
+                const id = document.getElementsByName('id2')[0].value;
+                const data = JSON.stringify({
+                    'color': document.getElementsByName('color2')[0].value,
+                    'price': document.getElementsByName('price2')[0].value
+                });
+                const object = JSON.stringify({
+                    'name': document.getElementsByName('name2')[0].value,
+                    'data': data
+                });
+                const response = await fetch(`${url}/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: object
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to modify object');
+                }
+            } catch (error) {
+                handleError(error);
+            }
+        }
+
+        async function getObjects() {
+            try {
+                const response = await loadObjects();
+                const tbody = document.querySelector('tbody');
+                tbody.innerHTML = '';
+                response.forEach(object => {
+                    if (object.data && object.data.color && object.data.price) {
+                        insertTr(object, false);
+                    }
+                });
+            } catch (error) {
+                handleError(error);
+            }
+        }
+
+        async function saveObject() {
+            if (document.getElementById('name').value.trim() !== '' &&
+                document.getElementById('color').value.trim() !== '' &&
+                document.getElementById('price').value.trim() !== '') {
+                const price = document.getElementById('price').value.trim();
+                if (isNaN(price)) {
+                    alert('Por favor, ingrese un número válido en el campo Price.');
+                    return;
+                }
+                try {
+                    const response = await addObject();
+                    const data = JSON.parse(response.data);
+                    response.data = data;
+                    insertTr(response, true);
+                } catch (error) {
+                    handleError(error);
+                }
+            }
+        }
+
+        async function deleteObject(object) {
+            try {
+                await removeObject(object.id);
+                document.querySelectorAll('tr').forEach(row => {
+                    if (row.getAttribute('id') === object.id) {
+                        row.remove();
+                        clearInputs();
+                    }
+                });
+            } catch (error) {
+                handleError(error);
+            }
+        }
+
+        async function updateObject() {
+            if (document.getElementsByName('name2')[0].value.trim() !== '' &&
+                document.getElementsByName('color2')[0].value.trim() !== '' &&
+                document.getElementsByName('price2')[0].value.trim() !== '') {
+                const price2 = document.getElementsByName('price2')[0].value.trim();
+                if (isNaN(price2)) {
+                    alert('Por favor, ingrese un número válido en el campo Price.');
+                    return;
+                }
+                try {
+                    await modifyObject();
+                    document.querySelectorAll('tr').forEach(row => {
+                        if (row.getAttribute('id') === document.getElementsByName('id2')[0].value) {
+                            row.cells[1].innerHTML = document.getElementsByName('name2')[0].value;
+                            row.cells[2].innerHTML = document.getElementsByName('color2')[0].value;
+                            row.cells[3].innerHTML = document.getElementsByName('price2')[0].value;
+                            row.cells[4].innerHTML = `<button onclick='viewObject(${JSON.stringify(row.getAttribute('id'))})'>VIEW</button>`;
+                            row.cells[5].innerHTML = `<button onclick='deleteObject(${JSON.stringify(row.getAttribute('id'))})'>DELETE</button>`;
+                        }
+                    });
+                    $('#popUp').dialog('close');
+                    clearInputs();
+                } catch (error) {
+                    handleError(error);
+                }
+            }
+        }
+
+        function insertTr(object, canChange) {
+            const tbody = document.querySelector('tbody');
+            const row = tbody.insertRow();
+            row.setAttribute('id', object.id);
+            row.insertCell().textContent = object.id;
+            row.insertCell().textContent = object.name;
+            row.insertCell().textContent = object.data.color;
+            row.insertCell().textContent = object.data.price;
+
+            if (canChange) {
+                row.insertCell().innerHTML = `<button onclick='viewObject(${JSON.stringify(object)})'>VIEW</button>`;
+                row.insertCell().innerHTML = `<button onclick='deleteObject(${JSON.stringify(object)})'>DELETE</button>`;
+            }
+
+            clearInputs();
+        }
+
+        function viewObject(object) {
+            const data = JSON.parse(object.data);
+            document.getElementsByName('id2')[0].value = object.id;
+            document.getElementsByName('name2')[0].value = object.name;
+            document.getElementsByName('color2')[0].value = data.color;
+            document.getElementsByName('price2')[0].value = data.price;
+            $('#popUp').dialog({
+                closeText: ''
+            }).css('font-size', '15px');
+        }
+
+        function clearInputs() {
+            document.getElementById('name').value = '';
+            document.getElementById('color').value = '';
+            document.getElementById('price').value = '';
+            document.getElementById('name').focus();
+        }
+
+        function handleError(error) {
+            console.error(error);
+            alert('An error occurred. Please check the console for details.');
+        }
+    </script>
+</body>
+
+</html>
